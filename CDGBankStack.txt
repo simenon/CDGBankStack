@@ -1,6 +1,6 @@
 ## APIVersion: 100003
-## Title: |cFF2222CrazyDutchGuy's|r Bank Stack |c0066990.1|r
-## Version: 0.1
+## Title: |cFF2222CrazyDutchGuy's|r Bank Stack |c0066990.2|r
+## Version: 0.2
 ## Author: CrazyDutchGuy
 ## SavedVariables: CDGBankStack_SV 
 ## OptionalDependsOn: LibAddonMenu-1.0
