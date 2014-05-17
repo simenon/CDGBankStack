@@ -87,7 +87,7 @@ function CDGBS:EVENT_ADD_ON_LOADED(eventCode, addOnName, ...)
 		--
 		-- A nice message to say the addon is loaded, this only displays if you use CDGLibGui
 		--
-		logActionToChat("|cFF2222CrazyDutchGuy's|r Bank Stacker |c0066990.3|r Loaded")
+		logActionToChat("|cFF2222CrazyDutchGuy's|r Bank Stacker |c0066990.4|r Loaded")
 		--
 		-- Done loading myself. Deregister Event
 		--

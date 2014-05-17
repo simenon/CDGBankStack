@@ -1,10 +1,12 @@
 ## APIVersion: 100003
-## Title: |cFF2222CrazyDutchGuy's|r Bank Stack |c0066990.3|r
-## Version: 0.3
+## Title: |cFF2222CrazyDutchGuy's|r Bank Stack |c0066990.4|r
+## Version: 0.4
 ## Author: CrazyDutchGuy
 ## SavedVariables: CDGBankStack_SV 
-## OptionalDependsOn: LibAddonMenu-1.0
-## OptionalDependsOn: LibStub
+## OptionalDependsOn: LibStub LibAddonMenu-1.0
+
+LibStub/LibStub.lua 
+LibAddonMenu-1.0/LibAddonMenu-1.0.lua
 
 CDGBankStack.lua
 CDGBankStack.xml
