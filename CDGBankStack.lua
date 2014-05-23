@@ -83,11 +83,7 @@ function CDGBS:EVENT_ADD_ON_LOADED(eventCode, addOnName, ...)
 		--
 		-- Register on all the other events we want to listen on
 		--
-		EVENT_MANAGER:RegisterForEvent(CDGBankStack.general.addonName, EVENT_OPEN_BANK, function(...) CDGBS:EVENT_OPEN_BANK(...) end)
-		--
-		-- A nice message to say the addon is loaded, this only displays if you use CDGLibGui
-		--
-		logActionToChat("|cFF2222CrazyDutchGuy's|r Bank Stacker |c0066990.4|r Loaded")
+		EVENT_MANAGER:RegisterForEvent(CDGBankStack.general.addonName, EVENT_OPEN_BANK, function(...) CDGBS:EVENT_OPEN_BANK(...) end)		
 		--
 		-- Done loading myself. Deregister Event
 		--
@@ -95,6 +91,16 @@ function CDGBS:EVENT_ADD_ON_LOADED(eventCode, addOnName, ...)
 	end
 end
 
+function CDGBS:EVENT_PLAYER_ACTIVATED(...)
+	--
+	-- A nice message to say the addon is loaded
+	--
+	logActionToChat("|cFF2222CrazyDutchGuy's|r Bank Stacker |c0066990.5|r Loaded")
+
+	EVENT_MANAGER:UnregisterForEvent(CDGBankStack.general.addonName, EVENT_PLAYER_ACTIVATED)
+end
+
 function CDGBS_OnInitialized()
 	EVENT_MANAGER:RegisterForEvent(CDGBankStack.general.addonName, EVENT_ADD_ON_LOADED, function(...) CDGBS:EVENT_ADD_ON_LOADED(...) end )	
+	EVENT_MANAGER:RegisterForEvent(CDGBankStack.general.addonName, EVENT_PLAYER_ACTIVATED, function(...) CDGBS:EVENT_PLAYER_ACTIVATED(...) end )	
 end
