@@ -1,13 +1,12 @@
 ## APIVersion: 100004
 ## Title: |cFF2222CrazyDutchGuy's|r Bank Stack
-## Version: 0.6
+## Version: 0.7
 ## Author: CrazyDutchGuy
 ## Description: |cFF2222CrazyDutchGuy's|r Bank Stack |c0066990.5|r is an addon that automatically moves items from your backpack into you bank, if there is an unfilled stack allready in the bank.
 ## SavedVariables: CDGBankStack_SV 
 ## OptionalDependsOn: LibStub LibAddonMenu-2.0 
 
-Libs/LibStub/LibStub.lua
-Libs/LibMapPins-1.0/LibMapPins-1.0.lua
+libs/LibStub/LibStub.lua
 libs/LibAddonMenu-2.0/LibAddonMenu-2.0.lua
 libs/LibAddonMenu-2.0/controls/panel.lua
 libs/LibAddonMenu-2.0/controls/submenu.lua
