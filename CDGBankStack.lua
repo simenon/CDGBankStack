@@ -6,7 +6,7 @@ local Addon =
     Name = "CDGBankStack",
     NameSpaced = "CDG Bank Stacker",
     Author = "CrazyDutchGuy",
-    Version = "0.7",
+    Version = "1.1",
 }
 
 local CDGBankStack =
@@ -55,8 +55,8 @@ function CDGBS:EVENT_OPEN_BANK(...)
 				end
 				
 				if bankStack ~= bankMaxStack then
-					-- Small thanks to Garkin for pointing me to the zo_strformat routine
-					logActionToChat(zo_strformat("Banked <<2[1/$d]>>/<<3>> <<tm:1>>", bagItemLink, quantity, bagStack))
+					logActionToChat(string.format("Banked [%d/%d] %s", quantity, bagStack, bagItemLink))
+					--logActionToChat(zo_strformat("Banked <<2[1/$d]>>/<<3>> <<tm:1>>", bagItemLink, quantity, bagStack))
 					CallSecureProtected("PickupInventoryItem",BAG_BACKPACK, bagSlot, bankMaxStack-bankStack)
 					CallSecureProtected("PlaceInInventory", BAG_BANK, bankSlot)
 					--CallSecureProtected("PlaceInTransfer")
