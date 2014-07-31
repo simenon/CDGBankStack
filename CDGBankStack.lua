@@ -6,7 +6,7 @@ local Addon =
     Name = "CDGBankStack",
     NameSpaced = "CDG Bank Stacker",
     Author = "CrazyDutchGuy",
-    Version = "1.1",
+    Version = "1.2",
 }
 
 local CDGBankStack =
@@ -30,8 +30,8 @@ local function logActionToChat(msg)
 end
 
 function CDGBS:EVENT_OPEN_BANK(...)
-	local _, bankSlots = GetBagInfo(BAG_BANK)
-	local _, bagSlots = GetBagInfo(BAG_BACKPACK)
+	local bankSlots = GetBagSize(BAG_BANK)
+	local bagSlots = GetBagSize(BAG_BACKPACK)
 	--
 	-- Loop over all the bankslots and get the info needed
 	--
