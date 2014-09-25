@@ -6,7 +6,7 @@ local Addon =
     Name = "CDGBankStack",
     NameSpaced = "CDG Bank Stacker",
     Author = "CrazyDutchGuy",
-    Version = "1.2",
+    Version = "1.3",
 }
 
 local CDGBankStack =
