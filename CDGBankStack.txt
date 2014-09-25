@@ -1,4 +1,4 @@
-## APIVersion: 100008
+## APIVersion: 100009
 ## Title: |cFFFFB0Bank Stack|r by |c00C000CrazyDutchGuy|r
 ## Author: CrazyDutchGuy
 ## Description: |cFFFFB0CrazyDutchGuy's Bank Stack|r is an addon that automatically moves items from your backpack into you bank, if there is an unfilled stack allready in the bank.
