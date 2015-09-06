@@ -1,24 +1,27 @@
-## APIVersion: 100009
-## Title: |cFFFFB0Bank Stack|r by |c00C000CrazyDutchGuy|r
-## Author: CrazyDutchGuy
-## Description: |cFFFFB0CrazyDutchGuy's Bank Stack|r is an addon that automatically moves items from your backpack into you bank, if there is an unfilled stack allready in the bank.
-## SavedVariables: CDGBankStack_SV 
-## OptionalDependsOn: LibStub LibAddonMenu-2.0 
+## APIVersion: 100012
+## Title: |cFFFFBECDG Bank Stacker|r
+## Author: |cFFA500CrazyDutchGuy|r & |cEFEBBEGarkin|r
+## Description: |cEFEBBECrazyDutchGuy's Bank Stacker|r is an addon that automatically moves items from your backpack into your bank, if there is an unfilled stack allready in the bank.
+## Version: 1.9
+## SavedVariables: CDGBankStack_SV
+## OptionalDependsOn: LibAddonMenu-2.0
 
-libs/LibStub/LibStub.lua
-libs/LibAddonMenu-2.0/LibAddonMenu-2.0.lua
-libs/LibAddonMenu-2.0/controls/panel.lua
-libs/LibAddonMenu-2.0/controls/submenu.lua
-libs/LibAddonMenu-2.0/controls/button.lua
-libs/LibAddonMenu-2.0/controls/checkbox.lua
-libs/LibAddonMenu-2.0/controls/colorpicker.lua
-libs/LibAddonMenu-2.0/controls/custom.lua
-libs/LibAddonMenu-2.0/controls/description.lua
-libs/LibAddonMenu-2.0/controls/dropdown.lua
-libs/LibAddonMenu-2.0/controls/editbox.lua
-libs/LibAddonMenu-2.0/controls/header.lua
-libs/LibAddonMenu-2.0/controls/slider.lua
-libs/LibAddonMenu-2.0/controls/texture.lua
+Libs\LibStub\LibStub.lua
+
+Libs\LibAddonMenu-2.0\LibAddonMenu-2.0.lua
+
+Libs\LibAddonMenu-2.0\controls\panel.lua
+Libs\LibAddonMenu-2.0\controls\submenu.lua
+Libs\LibAddonMenu-2.0\controls\button.lua
+Libs\LibAddonMenu-2.0\controls\checkbox.lua
+Libs\LibAddonMenu-2.0\controls\colorpicker.lua
+Libs\LibAddonMenu-2.0\controls\custom.lua
+Libs\LibAddonMenu-2.0\controls\description.lua
+Libs\LibAddonMenu-2.0\controls\dropdown.lua
+Libs\LibAddonMenu-2.0\controls\editbox.lua
+Libs\LibAddonMenu-2.0\controls\header.lua
+Libs\LibAddonMenu-2.0\controls\slider.lua
+Libs\LibAddonMenu-2.0\controls\texture.lua
+Libs\LibAddonMenu-2.0\controls\iconpicker.lua
 
 CDGBankStack.lua
-CDGBankStack.xml

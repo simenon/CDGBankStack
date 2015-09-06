@@ -14,7 +14,7 @@
 }	]]
 
 
-local widgetVersion = 3
+local widgetVersion = 9
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -30,7 +30,7 @@ local function UpdateDisabled(control)
 	else
 		disable = control.data.disabled
 	end
-	
+
 	control.dropdown:SetEnabled(not disable)
 	if disable then
 		control.label:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGBA())
@@ -39,7 +39,7 @@ local function UpdateDisabled(control)
 	end
 end
 
-local function UpdateValue(control, forceDefault, value)	
+local function UpdateValue(control, forceDefault, value)
 	if forceDefault then	--if we are forcing defaults
 		value = control.data.default
 		control.data.setFunc(value)
@@ -56,13 +56,13 @@ local function UpdateValue(control, forceDefault, value)
 	end
 end
 
-local function DropdownCallback(choice, choiceText, choice)
+local function DropdownCallback(control, choiceText, choice)
 	choice.control:UpdateValue(false, choiceText)
 end
 
 local function UpdateChoices(control, choices)
 	control.dropdown:ClearItems()	--remove previous choices	--(need to call :SetSelectedItem()?)
-	
+
 	--build new list of choices
 	local choices = choices or control.data.choices
 	for i = 1, #choices do
@@ -82,26 +82,22 @@ local function GrabSortingInfo(sortInfo)
 	return t
 end
 
-
-local comboboxCount = 1
 function LAMCreateControl.dropdown(parent, dropdownData, controlName)
-	local control = wm:CreateTopLevelWindow(controlName or dropdownData.reference)
-	control:SetParent(parent.scroll)
-	control:SetMouseEnabled(true)
-	control.tooltipText = dropdownData.tooltip
-	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
-	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
-	
-	control.label = wm:CreateControl(nil, control, CT_LABEL)
-	local label = control.label
-	label:SetAnchor(TOPLEFT)
-	label:SetFont("ZoFontWinH4")
-	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
-	label:SetText(dropdownData.name)
+	local control = LAM.util.CreateLabelAndContainerControl(parent, dropdownData, controlName)
 
-	control.combobox = wm:CreateControlFromVirtual(parent:GetName().."Combobox"..comboboxCount, control, "ZO_ComboBox")
-	comboboxCount = comboboxCount + 1
+	local countControl = parent
+	local name = parent:GetName()
+	if not name or #name == 0 then
+		countControl = LAMCreateControl
+		name = "LAM"
+	end
+	local comboboxCount = (countControl.comboboxCount or 0) + 1
+	countControl.comboboxCount = comboboxCount
+	control.combobox = wm:CreateControlFromVirtual(zo_strjoin(nil, name, "Combobox", comboboxCount), control.container, "ZO_ComboBox")
+
 	local combobox = control.combobox
+	combobox:SetAnchor(TOPLEFT)
+	combobox:SetDimensions(control.container:GetDimensions())
 	combobox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	combobox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 	control.dropdown = ZO_ComboBox_ObjectFromContainer(combobox)
@@ -111,31 +107,13 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 		local sortType, sortOrder = sortInfo[1], sortInfo[2]
 		dropdown:SetSortOrder(sortOrder == "up" and ZO_SORT_ORDER_UP or ZO_SORT_ORDER_DOWN, sortType == "name" and ZO_SORT_BY_NAME or ZO_SORT_BY_NAME_NUMERIC)
 	end
-	
-	local isHalfWidth = dropdownData.width == "half"
-	if isHalfWidth then
-		control:SetDimensions(250, 55)
-		label:SetDimensions(250, 26)
-		combobox:SetDimensions(240, 26)
-		--dropdown:SetWidth(240)
-		combobox:SetAnchor(TOPRIGHT, label, BOTTOMRIGHT)
-	else
-		control:SetDimensions(510, 30)
-		label:SetDimensions(300, 26)
-		combobox:SetDimensions(200, 26)
-		--dropdown:SetWidth(200)
-		combobox:SetAnchor(TOPRIGHT)
-	end
-	
-	if warning then
+
+	if dropdownData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, combobox, LEFT, -5, 0)
-		control.warning.tooltipText = warningText
+		control.warning.data = {tooltipText = dropdownData.warning}
 	end
 
-	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
-	control.data = dropdownData
-	
 	if dropdownData.disabled then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()
@@ -144,7 +122,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 	control:UpdateChoices(dropdownData.choices)
 	control.UpdateValue = UpdateValue
 	control:UpdateValue()
-	
+
 	if control.panel.data.registerForRefresh or control.panel.data.registerForDefaults then	--if our parent window wants to refresh controls, then add this to the list
 		tinsert(control.panel.controlsToRefresh, control)
 	end

@@ -1,136 +1,136 @@
-local LAM2 = LibStub:GetLibrary("LibAddonMenu-2.0")
 local CDGBS = ZO_Object:Subclass()
 
-local Addon =
-{
-    Name = "CDGBankStack",
-    NameSpaced = "CDG Bank Stacker",
-    Author = "CrazyDutchGuy",
-    Version = "1.3",
+CDGBS.Name = "CDGBankStack"
+CDGBS.NameSpaced = "CDG Bank Stacker"
+CDGBS.Author = "|cFFA500CrazyDutchGuy|r & Garkin"
+CDGBS.Version = "1.9"
+CDGBS.defaults = {
+	logToDefaultChat = true,
+	logToCDGShowLoot = true,
+	ignoreSavedItems = true,
 }
 
-local CDGBankStack =
-{ 
-	defaults = 
-	{
-		logToDefaultChat = true,
-		logToCDGShowLoot = true,
-	}
-}
+CDGBS.SV = {}
 
-local CDGBS_SV = {}
-
-local function logActionToChat(msg)
-	if CDGBS_SV.logToDefaultChat then
+function CDGBS:LogActionToChat(msg)
+	if CDGBS.SV.logToDefaultChat then
 		d(msg)
 	end
-	if CDGBS_SV.logToCDGShowLoot and CDGLibGui then
+	if CDGBS.SV.logToCDGShowLoot and CDGLibGui then
 		CDGLibGui.addMessage(msg)
 	end
 end
 
+function CDGBS:IsItemProtected(bagId, slotId)
+	--Item Saver support
+	if ItemSaver_IsItemSaved and ItemSaver_IsItemSaved(bagId, slotId) then
+		return true
+	end
+
+	--FCO ItemSaver support
+	if FCOIsMarked and FCOIsMarked(GetItemInstanceId(bagId, slotId), -1) then
+		return true
+	end
+
+	--FilterIt support
+	if FilterIt and FilterIt.AccountSavedVariables and FilterIt.AccountSavedVariables.FilteredItems then
+		local sUniqueId = Id64ToString(GetItemUniqueId(bagId, slotId))
+		if FilterIt.AccountSavedVariables.FilteredItems[sUniqueId] then
+			return true
+		end
+	end
+
+	return false
+end
+
 function CDGBS:EVENT_OPEN_BANK(...)
-	local bankSlots = GetBagSize(BAG_BANK)
-	local bagSlots = GetBagSize(BAG_BACKPACK)
-	--
-	-- Loop over all the bankslots and get the info needed
-	--
-	for bankSlot = 0, bankSlots do
-		local bankItemName = GetItemName(BAG_BANK, bankSlot)
-		local bankStack,bankMaxStack = GetSlotStackSize(BAG_BANK, bankSlot)
-		--
-		-- For each bankslot, look in our bagslot if we have an item corresponding 
-		-- and see if we can stack onto it. This could be more efficiently, but 
-		-- for these purposes it works good enough.
-		--
-		for bagSlot = 0, bagSlots do
-			local bagItemName = GetItemName(BAG_BACKPACK, bagSlot)
-			local bagStack,bagMaxStack = GetSlotStackSize(BAG_BACKPACK, bagSlot)
-			local bagItemLink = GetItemLink(BAG_BACKPACK, bagSlot, LINK_STYLE_DEFAULT)
-			
-			if bankItemName == bagItemName and bagItemName~=nil and bagItemName ~= "" then
-				local quantity = bagStack
-				if (bankMaxStack-bankStack) < bagStack then
-					quantity = bankMaxStack-bankStack
+	local bankCache = SHARED_INVENTORY:GenerateFullSlotData(nil, BAG_BANK)
+	local bagCache  = SHARED_INVENTORY:GenerateFullSlotData(nil, BAG_BACKPACK)
+
+	for bankSlot, bankSlotData in pairs(bankCache) do
+		if not (bankSlotData.itemType == ITEMTYPE_FOOD or bankSlotData.itemType == ITEMTYPE_DRINK or bankSlotData.itemType == ITEMTYPE_POTION or bankSlotData.itemType == ITEMTYPE_SOUL_GEM or bankSlotData.itemType == ITEMTYPE_TOOL) then
+			local bankStack, bankMaxStack = GetSlotStackSize(BAG_BANK, bankSlot)
+
+			if bankStack > 0 and bankStack < bankMaxStack then
+				for bagSlot, bagSlotData in pairs(bagCache) do
+					if not bagSlotData.stolen and bankSlotData.rawName == bagSlotData.rawName and (not self.SV.ignoreSavedItems or (self.SV.ignoreSavedItems and not self:IsItemProtected(BAG_BACKPACK, bagSlot))) then
+						local bagStack, bagMaxStack = GetSlotStackSize(BAG_BACKPACK, bagSlot)
+						local bagItemLink = GetItemLink(BAG_BACKPACK, bagSlot, LINK_STYLE_DEFAULT)
+						local quantity = zo_min(bagStack, bankMaxStack - bankStack) 
+
+						if IsProtectedFunction("RequestMoveItem") then
+							CallSecureProtected("RequestMoveItem", BAG_BACKPACK, bagSlot, BAG_BANK, bankSlot, quantity)
+						else
+							RequestMoveItem(BAG_BACKPACK, bagSlot, BAG_BANK, bankSlot, quantity)
+						end
+
+						self:LogActionToChat(zo_strformat("Banked [<<1>>/<<2>>] <<t:3>>", quantity, bagStack, bagItemLink))
+
+						bankStack = bankStack + quantity
+
+						if bankStack == bankMaxStack then
+							break
+						end
+					end
 				end
-				
-				if bankStack ~= bankMaxStack then
-					logActionToChat(string.format("Banked [%d/%d] %s", quantity, bagStack, bagItemLink))
-					--logActionToChat(zo_strformat("Banked <<2[1/$d]>>/<<3>> <<tm:1>>", bagItemLink, quantity, bagStack))
-					CallSecureProtected("PickupInventoryItem",BAG_BACKPACK, bagSlot, bankMaxStack-bankStack)
-					CallSecureProtected("PlaceInInventory", BAG_BANK, bankSlot)
-					--CallSecureProtected("PlaceInTransfer")
-				end
-				--
-				-- Stack is updated, if we find another same item to stack in the bank, then we need to update our reference of the bankstack, else we might get stuck
-				--
-				bagStack,bagMaxStack = GetSlotStackSize(BAG_BACKPACK, bagSlot)
 			end
 		end
 	end
 end
 
 
-local function createLAM2Panel()
-    local panelData = 
-    {
-        type = "panel",
-        name = Addon.NameSpaced,
-        displayName = "|cFFFFB0" .. Addon.NameSpaced .. "|r",
-        author = Addon.Author,
-        version = Addon.Version,        
-    }
+function CDGBS:CreateLAM2Panel()
+	local panelData = {
+		type = "panel",
+		name = self.NameSpaced,
+		displayName = ZO_HIGHLIGHT_TEXT:Colorize(self.NameSpaced),
+		author = self.Author,
+		version = self.Version,
+	}
 
-    local optionsData = 
-    {
-        [1] = 
-        {
-            type = "checkbox",
-            name = "Log to default chat",
-            tooltip = "Log to default chat.",
-            getFunc = function() return CDGBS_SV.logToDefaultChat end,
-            setFunc = function(value) CDGBS_SV.logToDefaultChat = value end,
-        },
-        [2] =
-        {
-            type = "checkbox",
-            name = "Log to CDG Show Loot",
-            tooltip = "Log to CDG Show Loot.",
-            getFunc = function() return CDGBS_SV.logToCDGShowLoot end,
-            setFunc = function(value) CDGBS_SV.logToCDGShowLoot = value end,
-        },
-        [3] =
-        {
-            type = "description",
-            text = "|cFF2222CrazyDutchGuy's|r Bank Stack is an addon that automatically moves items from your backpack onto unfilled stacks in your bank.",
-        }
-    } 
+	local optionsData = {
+		{
+			type = "checkbox",
+			name = "Log to default chat",
+			tooltip = "Log to default chat.",
+			getFunc = function() return self.SV.logToDefaultChat end,
+			setFunc = function(value) self.SV.logToDefaultChat = value end,
+		},
+		{
+			type = "checkbox",
+			name = "Log to CDG Show Loot",
+			tooltip = "Log to CDG Show Loot.",
+			getFunc = function() return self.SV.logToCDGShowLoot end,
+			setFunc = function(value) self.SV.logToCDGShowLoot = value end,
+		},
+		{
+			type = "checkbox",
+			name = "Don't move \"saved\" items",
+			tooltip = "Don't touch items marked by ItemSaver, FCO ItemSaver or Circonians FilterIt.",
+			getFunc = function() return self.SV.ignoreSavedItems end,
+			setFunc = function(value) self.SV.ignoreSavedItems = value end,
+		},
+		{
+			type = "description",
+			text = "|cEFEBBECrazyDutchGuy's Bank Stacker|r is an addon that automatically moves items from your backpack onto unfilled stacks in your bank.",
+		}
+	}
 
-   	LAM2:RegisterAddonPanel(Addon.Name.."LAM2Options", panelData)    
-    LAM2:RegisterOptionControls(Addon.Name.."LAM2Options", optionsData)
+	local LAM2 = LibStub:GetLibrary("LibAddonMenu-2.0")
+	LAM2:RegisterAddonPanel(self.Name.."LAM2Options", panelData)
+	LAM2:RegisterOptionControls(self.Name.."LAM2Options", optionsData)
 end 
 
 function CDGBS:EVENT_ADD_ON_LOADED(eventCode, addOnName, ...)
-	if(addOnName == Addon.Name) then
-		--
-		-- Initialize our saved variabeles, if needed
-		--
-		CDGBS_SV = ZO_SavedVars:New(Addon.Name.."_SV", 1, nil, CDGBankStack.defaults)
-		--
-		-- Register our stuff in the addon settings
-		--
-		createLAM2Panel()
-		--
-		-- Register on all the other events we want to listen on
-		--
-		EVENT_MANAGER:RegisterForEvent(Addon.Name, EVENT_OPEN_BANK, function(...) CDGBS:EVENT_OPEN_BANK(...) end)		
-		--
-		-- Done loading myself. Deregister Event
-		--
-		EVENT_MANAGER:UnregisterForEvent(Addon.Name, EVENT_ADD_ON_LOADED)
+	if (addOnName == self.Name) then
+		EVENT_MANAGER:UnregisterForEvent(self.Name, EVENT_ADD_ON_LOADED)
+
+		self.SV = ZO_SavedVars:New(self.Name.."_SV", 1, nil, self.defaults)
+
+		self:CreateLAM2Panel()
+
+		EVENT_MANAGER:RegisterForEvent(self.Name, EVENT_OPEN_BANK, function(...) CDGBS:EVENT_OPEN_BANK(...) end)
 	end
 end
 
-function CDGBS_OnInitialized()
-	EVENT_MANAGER:RegisterForEvent(Addon.Name, EVENT_ADD_ON_LOADED, function(...) CDGBS:EVENT_ADD_ON_LOADED(...) end )		
-end
+EVENT_MANAGER:RegisterForEvent(CDGBS.Name, EVENT_ADD_ON_LOADED, function(...) CDGBS:EVENT_ADD_ON_LOADED(...) end)

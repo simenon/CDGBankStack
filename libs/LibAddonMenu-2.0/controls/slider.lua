@@ -15,7 +15,7 @@
 }	]]
 
 
-local widgetVersion = 2
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
@@ -32,7 +32,7 @@ local function UpdateDisabled(control)
 	else
 		disable = control.data.disabled
 	end
-	
+
 	control.slider:SetEnabled(not disable)
 	control.slidervalue:SetEditEnabled(not disable)
 	if disable then
@@ -61,60 +61,38 @@ local function UpdateValue(control, forceDefault, value)
 	else
 		value = control.data.getFunc()
 	end
-	
+
 	control.slider:SetValue(value)
 	control.slidervalue:SetText(value)
 end
 
 
 function LAMCreateControl.slider(parent, sliderData, controlName)
-	local control = wm:CreateTopLevelWindow(controlName or sliderData.reference)
-	control:SetParent(parent.scroll)
-	local isHalfWidth = sliderData.width == "half"
-	if isHalfWidth then
-		control:SetDimensions(250, 55)
-	else
-		control:SetDimensions(510, 40)
-	end
-	control:SetMouseEnabled(true)
-	control.tooltipText = sliderData.tooltip
-	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
-	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
-	
-	control.label = wm:CreateControl(nil, control, CT_LABEL)
-	local label = control.label
-	label:SetFont("ZoFontWinH4")
-	label:SetDimensions(isHalfWidth and 250 or 300, 26)
-	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
-	label:SetAnchor(isHalfWidth and TOPLEFT or LEFT)
-	label:SetText(sliderData.name)
-	
+	local control = LAM.util.CreateLabelAndContainerControl(parent, sliderData, controlName)
+
 	--skipping creating the backdrop...  Is this the actual slider texture?
-	control.slider = wm:CreateControl(nil, control, CT_SLIDER)
+	control.slider = wm:CreateControl(nil, control.container, CT_SLIDER)
 	local slider = control.slider
-	slider:SetDimensions(190, 14)
-	if isHalfWidth then
-		slider:SetAnchor(TOPRIGHT, label, BOTTOMRIGHT, -5, 2)
-	else
-		slider:SetAnchor(RIGHT, control, RIGHT, -5, -5)
-	end
+	slider:SetAnchor(TOPLEFT)
+	slider:SetAnchor(TOPRIGHT)
+	slider:SetHeight(14)
 	slider:SetMouseEnabled(true)
 	slider:SetOrientation(ORIENTATION_HORIZONTAL)
 	--put nil for highlighted texture file path, and what look to be texture coords
-	slider:SetThumbTexture("EsoUI\\Art\\Miscellaneous\\scrollbox_elevator.dds", "EsoUI\\Art\\Miscellaneous\\scrollbox_elevator_disabled.dds", nil, 8, 16) 
+	slider:SetThumbTexture("EsoUI\\Art\\Miscellaneous\\scrollbox_elevator.dds", "EsoUI\\Art\\Miscellaneous\\scrollbox_elevator_disabled.dds", nil, 8, 16)
 	local minValue = sliderData.min
 	local maxValue = sliderData.max
 	slider:SetMinMax(minValue, maxValue)
 	slider:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	slider:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseExit(control) end)
-	
+
 	slider.bg = wm:CreateControl(nil, slider, CT_BACKDROP)
 	local bg = slider.bg
 	bg:SetCenterColor(0, 0, 0)
 	bg:SetAnchor(TOPLEFT, slider, TOPLEFT, 0, 4)
 	bg:SetAnchor(BOTTOMRIGHT, slider, BOTTOMRIGHT, 0, -4)
 	bg:SetEdgeTexture("EsoUI\\Art\\Tooltips\\UI-SliderBackdrop.dds", 32, 4)
-	
+
 	control.minText = wm:CreateControl(nil, slider, CT_LABEL)
 	local minText = control.minText
 	minText:SetFont("ZoFontGameSmall")
@@ -126,15 +104,15 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	maxText:SetFont("ZoFontGameSmall")
 	maxText:SetAnchor(TOPRIGHT, slider, BOTTOMRIGHT)
 	maxText:SetText(sliderData.max)
-	
+
 	control.slidervalueBG = wm:CreateControlFromVirtual(nil, slider, "ZO_EditBackdrop")
 	control.slidervalueBG:SetDimensions(50, 16)
 	control.slidervalueBG:SetAnchor(TOP, slider, BOTTOM, 0, 0)
 	control.slidervalue = wm:CreateControlFromVirtual(nil, control.slidervalueBG, "ZO_DefaultEditForBackdrop")
 	local slidervalue = control.slidervalue
 	slidervalue:ClearAnchors()
-	slidervalue:SetAnchor(TOPLEFT, slidervaluebg, TOPLEFT, 3, 1)
-	slidervalue:SetAnchor(BOTTOMRIGHT, slidervaluebg, BOTTOMRIGHT, -3, -1)
+	slidervalue:SetAnchor(TOPLEFT, control.slidervalueBG, TOPLEFT, 3, 1)
+	slidervalue:SetAnchor(BOTTOMRIGHT, control.slidervalueBG, BOTTOMRIGHT, -3, -1)
 	slidervalue:SetTextType(TEXT_TYPE_NUMERIC)
 	slidervalue:SetFont("ZoFontGameSmall")
 	slidervalue:SetHandler("OnEscape", function(self)
@@ -145,28 +123,25 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 			self:LoseFocus()
 			control:UpdateValue(false, tonumber(self:GetText()))
 		end)
-	
+
 	local range = maxValue - minValue
 	slider:SetValueStep(sliderData.step or 1)
 	slider:SetHandler("OnValueChanged", function(self, value, eventReason)
 			if eventReason == EVENT_REASON_SOFTWARE then return end
 			self:SetValue(value)	--do we actually need this line?
-			slidervalue:SetText(value)	
+			slidervalue:SetText(value)
 		end)
 	slider:SetHandler("OnSliderReleased", function(self, value)
 			--sliderData.setFunc(value)
 			control:UpdateValue(false, value)	--does this work here instead?
 		end)
-		
+
 	if sliderData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, slider, LEFT, -5, 0)
-		control.warning.tooltipText = sliderData.warning
+		control.warning.data = {tooltipText = sliderData.warning}
 	end
-	
-	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
-	control.data = sliderData
-	
+
 	if sliderData.disabled then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()

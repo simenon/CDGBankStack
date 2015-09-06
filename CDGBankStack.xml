@@ -1,9 +1,0 @@
-<GuiXml>
-    <Controls>
-        <TopLevelControl name="CDGBankStack">
-            <OnInitialized>
-                CDGBS_OnInitialized()
-            </OnInitialized>
-        </TopLevelControl>
-    </Controls>
-</GuiXml>
