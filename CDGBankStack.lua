@@ -2,8 +2,8 @@ local CDGBS = ZO_Object:Subclass()
 
 CDGBS.Name = "CDGBankStack"
 CDGBS.NameSpaced = "CDG Bank Stacker"
-CDGBS.Author = "|cFFA500CrazyDutchGuy|r & Garkin"
-CDGBS.Version = "1.11"
+CDGBS.Author = "|cFFA500CrazyDutchGuy|r"
+CDGBS.Version = "1.12"
 CDGBS.defaults = {
 	logToDefaultChat = true,
 	logToCDGShowLoot = true,
