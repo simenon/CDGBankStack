@@ -44,8 +44,8 @@ function CDGBS:IsItemProtected(bagId, slotId)
 end
 
 function CDGBS:EVENT_OPEN_BANK(...)
-	local bankCache = SHARED_INVENTORY:GenerateFullSlotData(nil, BAG_BANK)
-	local bagCache  = SHARED_INVENTORY:GenerateFullSlotData(nil, BAG_BACKPACK)
+	local bankCache = SHARED_INVENTORY:GetOrCreateBagCache(BAG_BANK)
+	local bagCache  = SHARED_INVENTORY:GetOrCreateBagCache(BAG_BACKPACK)
 
 	for bankSlot, bankSlotData in pairs(bankCache) do
 		if not (bankSlotData.itemType == ITEMTYPE_FOOD or bankSlotData.itemType == ITEMTYPE_DRINK or bankSlotData.itemType == ITEMTYPE_POTION or bankSlotData.itemType == ITEMTYPE_SOUL_GEM or bankSlotData.itemType == ITEMTYPE_TOOL) then
