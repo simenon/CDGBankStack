@@ -54,23 +54,27 @@ function CDGBS:EVENT_OPEN_BANK(...)
 			if bankStack > 0 and bankStack < bankMaxStack then
 				for bagSlot, bagSlotData in pairs(bagCache) do
 					if not bagSlotData.stolen and bankSlotData.rawName == bagSlotData.rawName and (not self.SV.ignoreSavedItems or (self.SV.ignoreSavedItems and not self:IsItemProtected(BAG_BACKPACK, bagSlot))) then
-						local bagStack, bagMaxStack = GetSlotStackSize(BAG_BACKPACK, bagSlot)
+					
 						local bagItemLink = GetItemLink(BAG_BACKPACK, bagSlot, LINK_STYLE_DEFAULT)
-						local quantity = zo_min(bagStack, bankMaxStack - bankStack) 
+						if ( GetItemLinkBindType(bagItemLink) ~= BIND_TYPE_ON_PICKUP_BACKPACK ) then
+							local bagStack, bagMaxStack = GetSlotStackSize(BAG_BACKPACK, bagSlot)
+							local quantity = zo_min(bagStack, bankMaxStack - bankStack) 
 
-						if IsProtectedFunction("RequestMoveItem") then
-							CallSecureProtected("RequestMoveItem", BAG_BACKPACK, bagSlot, BAG_BANK, bankSlot, quantity)
-						else
-							RequestMoveItem(BAG_BACKPACK, bagSlot, BAG_BANK, bankSlot, quantity)
+							if IsProtectedFunction("RequestMoveItem") then
+								CallSecureProtected("RequestMoveItem", BAG_BACKPACK, bagSlot, BAG_BANK, bankSlot, quantity)
+							else
+								RequestMoveItem(BAG_BACKPACK, bagSlot, BAG_BANK, bankSlot, quantity)
+							end
+
+							self:LogActionToChat(zo_strformat("Banked [<<1>>/<<2>>] <<t:3>>", quantity, bagStack, bagItemLink ))
+
+							bankStack = bankStack + quantity
+
+							if bankStack == bankMaxStack then
+								break
+							end
 						end
-
-						self:LogActionToChat(zo_strformat("Banked [<<1>>/<<2>>] <<t:3>>", quantity, bagStack, bagItemLink))
-
-						bankStack = bankStack + quantity
-
-						if bankStack == bankMaxStack then
-							break
-						end
+						
 					end
 				end
 			end
